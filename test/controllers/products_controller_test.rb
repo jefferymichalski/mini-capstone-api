@@ -33,6 +33,9 @@ class ProductsControllerTest < ActionDispatch::IntegrationTest
 
     data = JSON.parse(response.body)
     assert_equal "Updated name", data["name"]
+    assert_equal product.price, data["price"]
+    assert_equal product.image_url, data["image_url"]
+    assert_equal product.description, data["description"]
   end
 
   test "destroy" do

@@ -1,6 +1,6 @@
 class ProductsController < ApplicationController
   def index
-    @products = Product.all.order[:id]
+    @products = Product.all
     render :index
   end
 
@@ -33,6 +33,6 @@ class ProductsController < ApplicationController
   def destroy
     @product = Product.find_by(id: params[:id])
     @product.destroy
-    render json: { message: "Target Neutralized" }
+    render json: { message: "Target Neutralized!!" }
   end
 end
