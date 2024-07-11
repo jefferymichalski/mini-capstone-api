@@ -5,12 +5,13 @@ class ProductsController < ApplicationController
   end
 
   def create
-    @products = products.create(
+    @product = Product.create(
       name: params[:name],
       price: params[:price],
       image_url: params[:image_url],
       description: params[:description],
     )
+    render :show
   end
 
   def show
