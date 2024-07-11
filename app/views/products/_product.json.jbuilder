@@ -1,9 +1,5 @@
 json.id product.id
-json.title product.title
-json.chef product.chef
-json.prep_time product.prep_time
-json.image_url product.image_url
-json.ingredients product.ingredients
-json.directions product.directions
-json.created_at product.created_at
-json.updated_at product.updated_at
+json.title product.name
+json.chef product.price
+json.prep_time product.image_url
+json.image_url product.description
