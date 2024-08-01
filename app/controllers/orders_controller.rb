@@ -1,45 +1,47 @@
 class OrdersController < ApplicationController
+  def index
+    @orders = current_user.orders
+    render :index
+  end
+
   def create
-    product = Product.find(order_params[:product_id])
-    quantity = order_params[:quantity].to_i
-    subtotal = product.price * quantity
-    tax = calculate_tax(subtotal)
-    total = subtotal + tax
+    # Find the product with an id of params[:product_id]
+    # Then grab its price
+    # Then multiply it by params[:quantity]
+    product = Product.find_by(id: params[:product_id])
+    price = product.price
+    calculated_subtotal = price * params[:quantity].to_i
+    # Multiply the subtotal by the tax rate
+    calculated_tax = calculated_subtotal * 0.09
+    # Add the subtotal and tax
+    calculated_total = calculated_subtotal + calculated_tax
 
-    order = Order.new(order_params.except(:subtotal, :tax, :total))
-    order.user_id = current_user.id
-    order.subtotal = subtotal
-    order.tax = tax
-    order.total = total
-
-    if order.save
-      render json: order, status: :created
-    else
-      render json: order.errors, status: :unprocessable_entity
-    end
-  end
-
-  def calculate_tax(subtotal)
-    subtotal * 0.1
-  end
-
-  private
-
-  def order_params
-    params.require(:order).permit(:user_id, :product_id, :quantity, :subtotal, :tax, :total)
+    @order = Order.create(
+      user_id: current_user.id,
+      product_id: params[:product_id],
+      quantity: params[:quantity],
+      subtotal: calculated_subtotal,
+      tax: calculated_tax,
+      total: calculated_total,
+    )
+    render :show
   end
 
   def show
-    order = Order.find(params[:id])
-    if order.user_id == current_user.id
-      render json: order
-    else
-      render json: { error: "Unauthorized" }, status: :unauthorized
-    end
-  end
+    # METHOD 1
+    # @order = Order.find_by(id: params[:id])
+    # if current_user.id == @order.user_id
+    #   render :show
+    # else
+    #   render json: {}, status: :unauthorized
+    # end
 
-  def index
-    orders = Order.where(user_id: current_user.id)
-    render json: orders
+    # METHOD 2
+    # @order = Order.find_by(id: params[:id], user_id: current_user.id)
+    # render :show
+
+    # METHOD 3
+    @order = current_user.orders.find_by(id: params[:id])
+    render :show
   end
 end
