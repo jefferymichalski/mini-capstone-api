@@ -1,36 +1,33 @@
-class OrdersController < ApplicationController
-  before_action :authenticate_user
+class ApplicationController < ActionController::Base
+  protect_from_forgery with: :exception, unless: -> { request.format.json? }
 
-  def index
-    @orders = current_user.orders
-    render :index
+  def current_user
+    auth_headers = request.headers["Authorization"]
+    if auth_headers.present? && auth_headers[/(?<=\A(Bearer ))\S+\z/]
+      token = auth_headers[/(?<=\A(Bearer ))\S+\z/]
+      begin
+        decoded_token = JWT.decode(
+          token,
+          Rails.application.credentials.fetch(:secret_key_base),
+          true,
+          { algorithm: "HS256" }
+        )
+        User.find_by(id: decoded_token[0]["user_id"])
+      rescue JWT::ExpiredSignature
+        nil
+      end
+    end
   end
 
-  def create
-    # Find the product with an id of params[:product_id]
-    # Then grab its price
-    # Then multiply it by params[:quantity]
-    product = Product.find_by(id: params[:product_id])
-    price = product.price
-    calculated_subtotal = price * params[:quantity].to_i
-    # Multiply the subtotal by the tax rate
-    calculated_tax = calculated_subtotal * 0.09
-    # Add the subtotal and tax
-    calculated_total = calculated_subtotal + calculated_tax
-
-    @order = Order.create(
-      user_id: current_user.id,
-      product_id: params[:product_id],
-      quantity: params[:quantity],
-      subtotal: calculated_subtotal,
-      tax: calculated_tax,
-      total: calculated_total,
-    )
-    render :show
+  def authenticate_user
+    unless current_user
+      render json: {}, status: :unauthorized
+    end
   end
 
-  def show
-    @order = current_user.orders.find_by(id: params[:id])
-    render :show
+  def authenticate_admin
+    unless current_user && current_user.admin
+      render json: {}, status: :unauthorized
+    end
   end
 end

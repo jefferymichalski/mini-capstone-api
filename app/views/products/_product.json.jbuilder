@@ -1,4 +1,5 @@
 json.id product.id
+json.categories product.categories
 json.name product.name
 json.price product.price
 json.tax product.tax
